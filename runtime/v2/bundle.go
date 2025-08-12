@@ -19,13 +19,12 @@ package v2
 import (
 	"context"
 	"fmt"
-	"os"
-	"path/filepath"
-
 	"github.com/containerd/containerd/identifiers"
 	"github.com/containerd/containerd/mount"
 	"github.com/containerd/containerd/namespaces"
 	"github.com/containerd/containerd/oci"
+	"os"
+	"path/filepath"
 )
 
 // LoadBundle loads an existing bundle from disk
@@ -81,10 +80,21 @@ func NewBundle(ctx context.Context, root, state, id string, spec []byte) (b *Bun
 		return nil, err
 	}
 	//to mount
-	rootfs := filepath.Join(b.Path, "rootfs")
+	rootfs := filepath.Join(b.Path, "rootfs") ///run/containerd/io.containerd.runtime.v2.task/k8s.io/aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa/rootfs
 	if err := os.MkdirAll(rootfs, 0711); err != nil {
 		return nil, err
 	}
+
+	//this also take effect in containerd binar
+	//check log by:journalctl -u containerd|grep lutzow
+	/*if strings.Contains(b.Path, "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa") && strings.Contains(b.Path, "io.containerd.runtime.v2.task") {
+		source := "/mnt/csi-data-aly/shared/public/drtraining/rootfstest"
+		flags := syscall.MS_BIND | syscall.MS_REC
+		if err := syscall.Mount(source, rootfs, "", uintptr(flags), ""); err != nil {
+			fmt.Printf("lutzow debug failed to mount %s to %s with err %s", source, rootfs, err)
+		}
+	}*/
+
 	paths = append(paths, rootfs)
 	if err := os.Mkdir(work, 0711); err != nil {
 		if !os.IsExist(err) {
@@ -117,7 +127,7 @@ type Bundle struct {
 
 // Delete a bundle atomically
 func (b *Bundle) Delete() error {
-	work, werr := os.Readlink(filepath.Join(b.Path, "work"))
+	work, werr := os.Readlink(filepath.Join(b.Path, "work")) //to modify
 	//to umount
 	rootfs := filepath.Join(b.Path, "rootfs")
 	if err := mount.UnmountAll(rootfs, 0); err != nil {

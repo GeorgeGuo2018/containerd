@@ -477,6 +477,7 @@ func (o *snapshotter) createSnapshot(ctx context.Context, kind snapshots.Kind, k
 
 		stat := st.Sys().(*syscall.Stat_t)
 
+		fmt.Printf("lutzow debug1:%s", td)
 		if err := os.Lchown(filepath.Join(td, "fs"), int(stat.Uid), int(stat.Gid)); err != nil {
 			if rerr := t.Rollback(); rerr != nil {
 				log.G(ctx).WithError(rerr).Warn("failed to rollback transaction")
@@ -505,12 +506,13 @@ func (o *snapshotter) prepareDirectory(ctx context.Context, snapshotDir string, 
 		return "", fmt.Errorf("failed to create temp dir: %w", err)
 	}
 
-	if err := os.Mkdir(filepath.Join(td, "fs"), 0755); err != nil {
+	fmt.Printf("lutzow debug2:%s", td)
+	if err := os.Mkdir(filepath.Join(td, "fs"), 0755); err != nil { //to modify
 		return td, err
 	}
 
 	if kind == snapshots.KindActive {
-		if err := os.Mkdir(filepath.Join(td, "work"), 0711); err != nil {
+		if err := os.Mkdir(filepath.Join(td, "work"), 0711); err != nil { //to modify
 			return td, err
 		}
 	}
@@ -542,8 +544,10 @@ func (o *snapshotter) mounts(s storage.Snapshot) []mount.Mount {
 	options := o.options
 	if s.Kind == snapshots.KindActive {
 		options = append(options,
+			//fmt.Sprintf("workdir=%s", filepath.Join("/var/lib/containerd/rootfstest", "worker2")),
 			fmt.Sprintf("workdir=%s", o.workPath(s.ID)),
 			//here to modify upperdir path
+			//fmt.Sprintf("upperdir=%s", filepath.Join("/var/lib/containerd/rootfstest", "upper2")),
 			fmt.Sprintf("upperdir=%s", o.upperPath(s.ID)),
 		)
 	} else if len(s.ParentIDs) == 1 {
@@ -561,7 +565,7 @@ func (o *snapshotter) mounts(s storage.Snapshot) []mount.Mount {
 
 	parentPaths := make([]string, len(s.ParentIDs))
 	for i := range s.ParentIDs {
-		parentPaths[i] = o.upperPath(s.ParentIDs[i])
+		parentPaths[i] = o.lowerPath(s.ParentIDs[i])
 	}
 
 	options = append(options, fmt.Sprintf("lowerdir=%s", strings.Join(parentPaths, ":")))
@@ -575,12 +579,19 @@ func (o *snapshotter) mounts(s storage.Snapshot) []mount.Mount {
 
 }
 
-func (o *snapshotter) upperPath(id string) string {
+// here generate upperfile path
+func (o *snapshotter) lowerPath(id string) string {
 	return filepath.Join(o.root, "snapshots", id, "fs")
 }
 
+func (o *snapshotter) upperPath(id string) string {
+	//return filepath.Join(o.root, "snapshots", id, "fs")
+	return filepath.Join("/var/lib/containerd/rootfstest", "upper2")
+}
+
 func (o *snapshotter) workPath(id string) string {
-	return filepath.Join(o.root, "snapshots", id, "work")
+	//return filepath.Join(o.root, "snapshots", id, "work")
+	return filepath.Join("/var/lib/containerd/rootfstest", "worker2")
 }
 
 // Close closes the snapshotter

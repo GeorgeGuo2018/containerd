@@ -99,7 +99,7 @@ func NewContainer(ctx context.Context, platform stdio.Platform, r *task.CreateTa
 	defer func() {
 		if retErr != nil {
 			if err := mount.UnmountAll(rootfs, 0); err != nil {
-				logrus.WithError(err).Warn("failed to cleanup rootfs mount")
+				logrus.WithError(err).Warn("failed to cleanup rootfs mount2")
 			}
 		}
 	}()

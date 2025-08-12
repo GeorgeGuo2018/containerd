@@ -160,5 +160,5 @@ func umount(t *testing.T, target string) {
 			}
 		}
 	}
-	t.Fatalf("failed to unmount target %s", target)
+	t.Fatalf("failed to unmount target2 %s", target)
 }

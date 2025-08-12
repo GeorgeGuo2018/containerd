@@ -276,7 +276,7 @@ func (manager) Stop(ctx context.Context, id string) (shim.StopStatus, error) {
 		log.G(ctx).WithError(err).Warn("failed to remove runc container")
 	}
 	if err := mount.UnmountAll(filepath.Join(path, "rootfs"), 0); err != nil {
-		log.G(ctx).WithError(err).Warn("failed to cleanup rootfs mount")
+		log.G(ctx).WithError(err).Warn("failed to cleanup rootfs mount3")
 	}
 	pid, err := runcC.ReadPidFile(filepath.Join(path, process.InitPidFile))
 	if err != nil {

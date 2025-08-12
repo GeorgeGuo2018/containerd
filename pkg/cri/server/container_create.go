@@ -67,7 +67,17 @@ func (c *criService) CreateContainer(ctx context.Context, r *runtime.CreateConta
 	// Generate unique id and name for the container and reserve the name.
 	// Reserve the container name to avoid concurrent `CreateContainer` request creating
 	// the same container.
-	id := util.GenerateID()
+	id := ""
+	for k, v := range r.Config.Labels {
+		log.G(ctx).Infof("lutzow debug r.Config.Labels key:%s, value:%s", k, v)
+	}
+
+	if name, _ := r.Config.Labels["io.kubernetes.container.name"]; name == "busyboxi-container" {
+		id = "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa" //this worked in binary of containerd
+	} else {
+		id = util.GenerateID()
+	}
+
 	metadata := config.GetMetadata()
 	if metadata == nil {
 		return nil, errors.New("container config must include metadata")
